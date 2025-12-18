@@ -1,4 +1,4 @@
-Experiment No.,Spindle speed (rpm),Feed Rate (mm/min),Depth of cut (mm),Surface Roughness (æm),MRR(mm3/min)
+Experiment No.,Spindle speed (rpm),Feed Rate (mm/min),Depth of cut (mm),Surface Roughness (Ã¦m),MRR(mm3/min)
 1A,175,40,0.1,4.1331,247.986
 2A,175,40,0.3,4.5021,270.126
 3A,175,40,0.5,5.9296,355.776
