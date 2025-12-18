@@ -1,0 +1,66 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = pd.read_csv('/kaggle/input/1-csv/1.csv.csv', encoding='ISO-8859-1')
+
+# Check data
+print(data.head())
+
+# Independent and dependent variables
+X = data[['Spindle speed (rpm)', 'Feed Rate (mm/min)', 'Depth of cut (mm)']]
+y = data['Surface Roughness (æm)']
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Define expanded parameter grid
+param_grid = {
+    'C': [0.1, 1, 10, 100, 1000],
+    'epsilon': [0.01, 0.1, 0.5, 1, 5],
+    'gamma': ['scale', 'auto', 0.001, 0.01, 0.1],
+    'kernel': ['rbf', 'poly', 'sigmoid']  # Trying different kernels
+}
+
+# GridSearchCV with SVR
+grid_search = GridSearchCV(SVR(), param_grid, cv=5, scoring='r2', n_jobs=-1)
+grid_search.fit(X_train, y_train)
+
+# Best parameters and best model
+print(f"Best parameters: {grid_search.best_params_}")
+best_svr = grid_search.best_estimator_
+
+# Predict and evaluate the model
+y_pred = best_svr.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+print(f"R-squared: {r2}")
+
+# Predicting with new data
+new_data = pd.DataFrame({
+    'Spindle speed (rpm)': [400],
+    'Feed Rate (mm/min)': [150],
+    'Depth of cut (mm)': [0.5]
+})
+new_data_scaled = scaler.transform(new_data)
+predicted_ra = best_svr.predict(new_data_scaled)
+print(f"Predicted Surface Roughness (Ra) for input [400, 150, 0.5]: {predicted_ra[0]}")
+
+# Plot residuals
+residuals = y_test - y_pred
+plt.scatter(y_pred, residuals)
+plt.axhline(0, color='red', linestyle='--')
+plt.xlabel('Predicted values')
+plt.ylabel('Residuals')
+plt.title('Residual Plot for SVR')
+plt.show()
